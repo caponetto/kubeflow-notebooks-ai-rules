@@ -165,7 +165,7 @@ Acceptance criteria:
 
 ### Reviewing PRs with Agents
 
-Use AI agents to perform a first-pass review of pull requests. Check out the branch locally and use the prompt below.
+Use AI agents to perform a first-pass review of pull requests. Check out the branch locally and use the prompt below, replacing `<PR-URL>` with the actual pull request URL.
 
 > [!NOTE]
 > The prompt assumes your remote is named `upstream` and you're reviewing commits in `HEAD`. Adapt the git commands to your setup if needed.
@@ -177,6 +177,12 @@ Use AI agents to perform a first-pass review of pull requests. Check out the bra
 
 ````
 Review all commits in this branch against our coding standards.
+
+## Step 0: Gather context from the PR
+
+Read the pull request at <PR-URL>.
+Extract the PR description, review comments, and any linked issue URLs.
+Open and read each linked issue to understand the full context and acceptance criteria.
 
 ## Step 1: Get the branch diff
 
@@ -205,6 +211,7 @@ Check for:
 - Common pitfalls from the module's AGENTS.md
 - Code structure (single responsibility, separation of concerns)
 - DRY violations (duplicated code)
+- Alignment with the PR description and linked issue acceptance criteria
 
 ## Step 4: Report issues
 
