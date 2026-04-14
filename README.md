@@ -12,6 +12,7 @@ Currently, it includes:
 
 - `AGENTS.md` files: guidelines and patterns that AI tools read to understand how to write code for each module
 - `CLAUDE.md`: symlink to the root `AGENTS.md` for Claude Code compatibility
+- `skills/`: focused, short `SKILL.md` workflows that complement `AGENTS.md` policies
 
 > [!NOTE]
 >
@@ -41,7 +42,7 @@ cd kubeflow-notebooks-ai-rules
 ./scripts/install.sh <path-to-kubeflow-notebooks>
 ```
 
-This places `AGENTS.md` files in each module folder (e.g., `workspaces/frontend/AGENTS.md`). AI tools like Claude Code auto-discover these files based on your working directory, so the agent automatically gets the relevant guidelines when you're working in that module.
+This places `AGENTS.md` files in each module folder (e.g., `workspaces/frontend/AGENTS.md`) and symlinks all skills to `.agents/skills/` at the repo root following the [agentskills.io](https://agentskills.io/specification) open standard. AI tools auto-discover these files based on your working directory, so the agent automatically gets the relevant guidelines when you're working in that module.
 
 > [!WARNING]
 > Be careful not to commit the symlinked `AGENTS.md` files when pushing changes to the Kubeflow Notebooks repository.
@@ -66,41 +67,41 @@ This places `AGENTS.md` files in each module folder (e.g., `workspaces/frontend/
 kubeflow-notebooks-ai-rules/
 ├── README.md
 ├── .gitignore
-├── agents/                      # AGENTS.md files
-│   ├── mappings.conf            # Agent file mappings (used by scripts)
-│   ├── AGENTS.md                # Global policies
-│   ├── CLAUDE.md -> AGENTS.md   # Claude Code compatibility
+├── skills/                          # Focused tool-agnostic skills (agentskills.io standard)
+│   ├── README.md                    # Skill index and usage model
+│   └── <skill-name>/SKILL.md        # One focused workflow per skill (flat layout, name = dir)
+├── agents/                          # AGENTS.md files
+│   ├── mappings.conf                # Agent file mappings (used by scripts)
+│   ├── AGENTS.md                    # Global policies
+│   ├── CLAUDE.md -> AGENTS.md       # Claude Code compatibility
 │   ├── backend/
-│   │   ├── AGENTS.md            # Backend guidelines
-│   │   └── AGENTS-PATTERNS.md   # Backend patterns
+│   │   └── AGENTS.md                # Backend guidelines + skill playbooks
 │   ├── controller/
-│   │   ├── AGENTS.md            # Controller guidelines
-│   │   └── AGENTS-PATTERNS.md   # Controller patterns
-│   ├── frontend/
-│   │   ├── AGENTS.md            # Frontend guidelines
-│   │   ├── AGENTS-PATTERNS.md   # Frontend patterns
-│   │   └── cypress/
-│   │       ├── AGENTS.md        # Cypress guidelines
-│   │       └── AGENTS-PATTERNS.md
-│   └── templates/               # Templates for new agent files
-│       ├── README.md            # Template guide & patterns
-│       ├── agents-global.md     # Global AGENTS.md template
-│       ├── agents-module.md     # Module AGENTS.md template
-│       └── agents-module-patterns.md  # Module AGENTS-PATTERNS.md template
+│   │   └── AGENTS.md                # Controller guidelines + skill playbooks
+│   └── frontend/
+│       ├── AGENTS.md                # Frontend guidelines + skill playbooks
+│       └── cypress/
+│           └── AGENTS.md            # Cypress guidelines + skill playbooks
 └── scripts/
-    ├── install.sh               # Create symlinks
-    ├── uninstall.sh             # Remove symlinks
-    └── check.sh                 # Verify symlinks
+    ├── install.sh                   # Create symlinks
+    ├── uninstall.sh                 # Remove symlinks
+    └── check.sh                     # Verify symlinks
 ```
 
 ---
 
 ## 🤖 Agents
 
-`AGENTS.md` files provide guidelines for AI coding assistants. Each module has:
+`AGENTS.md` files provide guidelines for AI coding assistants, including links to task-focused skill playbooks.
 
-- `AGENTS.md` - Essential rules, commands, boundaries
-- `AGENTS-PATTERNS.md` - Detailed code examples and templates
+## 🧠 Skills
+
+`skills/` contains short, focused `SKILL.md` files intended to be combined with `AGENTS.md`:
+
+- `AGENTS.md`: stable policy, boundaries, and safety constraints
+- `SKILL.md`: task-level workflows (for example, reconcile changes, API integration, flaky test triage)
+
+This hybrid model keeps always-on constraints centralized while reducing prompt size for implementation-specific guidance.
 
 | File                                | Purpose                                        |
 | ----------------------------------- | ---------------------------------------------- |
@@ -197,17 +198,17 @@ Review only committed code. Ignore uncommitted changes.
 ## Step 2: Read the relevant guidelines
 
 Always read @AGENTS.md first. Then, based on changed files:
-- Controller changes: @workspaces/controller/AGENTS.md and AGENTS-PATTERNS.md
-- Backend changes: @workspaces/backend/AGENTS.md and AGENTS-PATTERNS.md
-- Frontend changes: @workspaces/frontend/AGENTS.md and AGENTS-PATTERNS.md
-- Cypress changes: @workspaces/frontend/src/__tests__/cypress/AGENTS.md and AGENTS-PATTERNS.md
+- Controller changes: @workspaces/controller/AGENTS.md plus linked skills
+- Backend changes: @workspaces/backend/AGENTS.md plus linked skills
+- Frontend changes: @workspaces/frontend/AGENTS.md plus linked skills
+- Cypress changes: @workspaces/frontend/src/__tests__/cypress/AGENTS.md plus linked skills
 
 ## Step 3: Review each changed file
 
 Check for:
 - MUST/MUST NOT violations (blocking)
 - SHOULD/SHOULD NOT violations (recommendation)
-- Anti-patterns from AGENTS-PATTERNS.md
+- Anti-patterns from linked skill playbooks
 - Common pitfalls from the module's AGENTS.md
 - Code structure (single responsibility, separation of concerns)
 - DRY violations (duplicated code)
@@ -230,17 +231,13 @@ For each issue found, output:
 
 ## 🔧 Extensibility
 
-When adding agent guidelines for a new module, use the templates in [`agents/templates/`](./agents/templates/) as a starting point. They capture the structural patterns and conventions used across all existing agent files.
-
-If `AGENTS-PATTERNS.md` files become too large, split into focused files:
+When adding agent guidelines for a new module, use the existing `AGENTS.md` files as reference. If module guidance becomes too large, extract focused `SKILL.md` files following the [agentskills.io](https://agentskills.io/specification) standard:
 
 ```
-frontend/
-├── AGENTS.md
-├── AGENTS-PATTERNS.md           # Could split into:
-├── PATTERNS-components.md       # UI, React context
-├── PATTERNS-testing.md          # Jest patterns
-└── PATTERNS-data.md             # State, API, errors
+.agents/skills/
+├── kubeflow-notebooks-frontend-component-authoring/SKILL.md
+├── kubeflow-notebooks-frontend-jest-rtl-testing/SKILL.md
+└── kubeflow-notebooks-frontend-api-integration/SKILL.md
 ```
 
 > [!IMPORTANT]
