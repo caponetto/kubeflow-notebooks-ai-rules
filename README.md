@@ -12,6 +12,7 @@ Currently, it includes:
 
 - `AGENTS.md` files: guidelines and patterns that AI tools read to understand how to write code for each module
 - `CLAUDE.md`: symlink to the root `AGENTS.md` for Claude Code compatibility
+- `SKILL.md` files: Claude Code slash-command skills for PR reviews, manifest comparison, and other workflows
 
 > [!NOTE]
 >
@@ -41,10 +42,10 @@ cd kubeflow-notebooks-ai-rules
 ./scripts/install.sh <path-to-kubeflow-notebooks>
 ```
 
-This places `AGENTS.md` files in each module folder (e.g., `workspaces/frontend/AGENTS.md`). AI tools like Claude Code auto-discover these files based on your working directory, so the agent automatically gets the relevant guidelines when you're working in that module.
+This places `AGENTS.md` files in each module folder and `SKILL.md` files under `.claude/skills/`. AI tools like Claude Code auto-discover these files based on your working directory, so the agent automatically gets the relevant guidelines when you're working in that module.
 
 > [!WARNING]
-> Be careful not to commit the symlinked `AGENTS.md` files when pushing changes to the Kubeflow Notebooks repository.
+> Be careful not to commit the symlinked files when pushing changes to the Kubeflow Notebooks repository.
 
 ### ✅ Verification
 
@@ -87,7 +88,21 @@ kubeflow-notebooks-ai-rules/
 │       ├── agents-global.md     # Global AGENTS.md template
 │       ├── agents-module.md     # Module AGENTS.md template
 │       └── agents-module-patterns.md  # Module AGENTS-PATTERNS.md template
+├── skills/                      # Claude Code slash-command skills
+│   ├── mappings.conf            # Skill file mappings (used by scripts)
+│   ├── kustomize-compare/       # /kustomize-compare skill
+│   │   └── SKILL.md
+│   ├── migration-guide/         # /migration-guide skill
+│   │   └── SKILL.md
+│   ├── review-backend/          # /review-backend skill
+│   │   ├── SKILL.md
+│   │   └── checklists/          # Review checklists (4 files)
+│   ├── review-controller/       # /review-controller skill
+│   │   └── SKILL.md
+│   └── review-dependabot-actions/  # /review-dependabot-actions skill
+│       └── SKILL.md
 └── scripts/
+    ├── common.sh                # Shared functions and variables
     ├── install.sh               # Create symlinks
     ├── uninstall.sh             # Remove symlinks
     └── check.sh                 # Verify symlinks
@@ -228,6 +243,22 @@ For each issue found, output:
 
 ---
 
+## 🛠️ Skills
+
+Skills are Claude Code slash commands (`/skill-name`) that automate multi-step workflows. They are installed as `SKILL.md` files under `.claude/skills/` in the Kubeflow Notebooks repo.
+
+| Skill                        | Command                       | Purpose                                              |
+| ---------------------------- | ----------------------------- | ---------------------------------------------------- |
+| Kustomize Compare            | `/kustomize-compare`          | Compare kustomize manifests between PR and baseline   |
+| Migration Guide              | `/migration-guide`            | Maintain the v1-to-v2 migration guide                |
+| Review Backend               | `/review-backend`             | Parallel code review of backend PRs (4 agents)       |
+| Review Controller            | `/review-controller`          | Code review of controller PRs                        |
+| Review Dependabot Actions    | `/review-dependabot-actions`  | Safety analysis of GitHub Actions version bumps       |
+
+Skills are automatically installed alongside agents when running `./scripts/install.sh`.
+
+---
+
 ## 🔧 Extensibility
 
 When adding agent guidelines for a new module, use the templates in [`agents/templates/`](./agents/templates/) as a starting point. They capture the structural patterns and conventions used across all existing agent files.
@@ -244,7 +275,7 @@ frontend/
 ```
 
 > [!IMPORTANT]
-> Update `agents/mappings.conf` when adding new files.
+> Update the relevant `mappings.conf` when adding new files (`agents/mappings.conf` for agents, `skills/mappings.conf` for skills). The scripts auto-discover all resource types by looking for directories with a `mappings.conf` file.
 
 ---
 
